@@ -62,7 +62,7 @@ public:
 
             pTarget = ObjectAccessor::FindPlayerByName(strCommand.c_str()); // get player by name
         }else
-            pTarget = handler->getSelectedPlayer();
+            pTarget = handler->GetSelectedPlayer();
 
         if (!pTarget)
             return false;
@@ -101,7 +101,7 @@ public:
 
             pTarget = ObjectAccessor::FindPlayerByName(strCommand.c_str()); // get player by name
         }else
-            pTarget = handler->getSelectedPlayer();
+            pTarget = handler->GetSelectedPlayer();
 
         if (!pTarget)
         {
@@ -184,7 +184,7 @@ public:
                 guid = player->GetGUID();
         }else
         {
-            player = handler->getSelectedPlayer();
+            player = handler->GetSelectedPlayer();
             if (player)
                 guid = player->GetGUID();
         }
