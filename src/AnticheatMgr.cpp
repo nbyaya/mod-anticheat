@@ -783,7 +783,7 @@ void AnticheatMgr::NoFallDamageDetection(Player* player, MovementInfo movementIn
     }
 }
 
-void AnticheatMgr::BGStartExploit(Player* player, MovementInfo movementInfo, uint32 opcode)
+void AnticheatMgr::BGStartExploit(Player* player, MovementInfo movementInfo, uint32 /*opcode*/)
 {
     if (!sConfigMgr->GetOption<bool>("Anticheat.DetectBGStartHack", true))
         return;
