@@ -152,16 +152,15 @@ public:
 
         Player* pTarget = player->GetConnectedPlayer();
 
-        WorldLocation Aloc = WorldLocation(0, -8833.37f, 628.62f, 94.00f, 1.06f);// Stormwind
-        WorldLocation Hloc = WorldLocation(1, 1569.59f, -4397.63f, 7.7f, 0.54f);// Orgrimmar
-
         if (pTarget->GetTeamId() == TEAM_ALLIANCE)
         {
+            WorldLocation Aloc = WorldLocation(0, -8833.37f, 628.62f, 94.00f, 1.06f);// Stormwind
             pTarget->TeleportTo(0, -8833.37f, 628.62f, 94.00f, 1.06f);//Stormwind
             pTarget->SetHomebind(Aloc, 1519);// Stormwind Homebind location
         }
         else
         {
+            WorldLocation Hloc = WorldLocation(1, 1569.59f, -4397.63f, 7.7f, 0.54f);// Orgrimmar
             pTarget->TeleportTo(1, 1569.59f, -4397.63f, 7.7f, 0.54f);//Orgrimmar
             pTarget->SetHomebind(Hloc, 1653);// Orgrimmar Homebind location
         }
@@ -207,29 +206,9 @@ public:
             return false;
         }
 
-        ObjectGuid guid = player->GetGUID();
-        Player* playerTarget = player->GetConnectedPlayer();
-        if (playerTarget)
+        if (Player* playerTarget = player->GetConnectedPlayer())
         {
-            float average = sAnticheatMgr->GetAverage(guid);
-            uint32 total_reports = sAnticheatMgr->GetTotalReports(guid);
-            uint32 speed_reports = sAnticheatMgr->GetTypeReports(guid, 0);
-            uint32 fly_reports = sAnticheatMgr->GetTypeReports(guid, 1);
-            uint32 waterwalk_reports = sAnticheatMgr->GetTypeReports(guid, 2);
-            uint32 jump_reports = sAnticheatMgr->GetTypeReports(guid, 3);
-            uint32 teleportplane_reports = sAnticheatMgr->GetTypeReports(guid, 4);
-            uint32 climb_reports = sAnticheatMgr->GetTypeReports(guid, 5);
-            uint32 teleport_reports = sAnticheatMgr->GetTypeReports(guid, 6);
-            uint32 ignorecontrol_reports = sAnticheatMgr->GetTypeReports(guid, 7);
-            uint32 zaxis_reports = sAnticheatMgr->GetTypeReports(guid, 8);
-            uint32 antiswim_reports = sAnticheatMgr->GetTypeReports(guid, 9);
-            uint32 gravity_reports = sAnticheatMgr->GetTypeReports(guid, 10);
-            uint32 antiknockback_reports = sAnticheatMgr->GetTypeReports(guid, 11);
-            uint32 no_fall_damage_reports = sAnticheatMgr->GetTypeReports(guid, 12);
-            uint32 op_ack_reports = sAnticheatMgr->GetTypeReports(guid, 13);
-            uint32 counter_measures_reports = sAnticheatMgr->GetTypeReports(guid, 14);
-
-            Player* playerTarget = player->GetConnectedPlayer();
+            ObjectGuid guid = player->GetGUID();
             uint32 latency = playerTarget->GetSession()->GetLatency();
 
             const char* lineTemplate_u;
@@ -264,8 +243,8 @@ public:
             handler->PSendSysMessage(playerInformationTemplate, player->GetName());
             handler->PSendSysMessage(ipAndLatencyTemplate, playerTarget->GetSession()->GetRemoteAddress(), latency);
 
-            //                                                      0          1         2
-            QueryResult resultADB = LoginDatabase.Query("SELECT unbandate, banreason, bannedby FROM account_banned WHERE id = {} ORDER BY bandate ASC", playerTarget->GetSession()->GetAccountId());
+            //                                                       0            1           2
+            QueryResult resultADB = LoginDatabase.Query("SELECT `unbandate`, `banreason`, `bannedby` FROM `account_banned` WHERE `id` = {} ORDER BY bandate ASC", playerTarget->GetSession()->GetAccountId());
             if (resultADB)
             {
                 do
@@ -284,8 +263,8 @@ public:
                 handler->PSendSysMessage(lineTemplate_s, "Account Previously Banned", "No");
             }
 
-            //                                                          0          1         2
-            QueryResult resultCDB = CharacterDatabase.Query("SELECT unbandate, banreason, bannedby FROM character_banned WHERE guid = {} ORDER BY bandate ASC;", playerTarget->GetGUID().GetCounter());
+            //                                                           0            1           2
+            QueryResult resultCDB = CharacterDatabase.Query("SELECT `unbandate`, `banreason`, `bannedby` FROM `character_banned` WHERE `guid` = {} ORDER BY `bandate` ASC;", playerTarget->GetGUID().GetCounter());
             if (resultCDB)
             {
                 do
@@ -305,7 +284,7 @@ public:
             }
 
             // If any row exists, then we consider "detected".
-            if (CharacterDatabase.Query("SELECT TRUE FROM account_data WHERE `data` LIKE '%CastSpellByName%' AND accountId = {};", playerTarget->GetSession()->GetAccountId()))
+            if (CharacterDatabase.Query("SELECT TRUE FROM `account_data` WHERE `data` LIKE '%CastSpellByName%' AND `accountId` = {};", playerTarget->GetSession()->GetAccountId()))
             {
                 handler->PSendSysMessage(lineTemplate_s, "Macro Requiring Lua Unlock Detected", "Yes");
             }
@@ -314,49 +293,53 @@ public:
                 handler->PSendSysMessage(lineTemplate_s, "Macro Requiring Lua Unlock Detected", "No");
             }
 
+            float average = sAnticheatMgr->GetAverage(guid);
+            uint32 total_reports = sAnticheatMgr->GetTotalReports(guid);
+            uint32 counter_measures_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::COUNTER_MEASURES_REPORT);
+
             handler->PSendSysMessage(lineTemplate_u, "Counter Measures Deployed", counter_measures_reports);
             handler->PSendSysMessage(averageTotalTemplate, average, total_reports);
 
-            if (speed_reports)
+            if (uint32 speed_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::SPEED_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Speed Reports", speed_reports);
 
-            if (fly_reports)
+            if (uint32 fly_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::FLY_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Fly Reports", fly_reports);
 
-            if (jump_reports)
+            if (uint32 jump_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::JUMP_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Jump Reports", jump_reports);
 
-            if (waterwalk_reports)
+            if (uint32 waterwalk_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::WALK_WATER_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Walk On Water Reports", waterwalk_reports);
 
-            if (teleportplane_reports)
+            if (uint32 teleportplane_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::TELEPORT_PLANE_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Teleport To Plane Reports", teleportplane_reports);
 
-            if (teleport_reports)
+            if (uint32 teleport_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::TELEPORT_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Teleport Reports", teleport_reports);
 
-            if (climb_reports)
+            if (uint32 climb_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::CLIMB_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Climb Reports", climb_reports);
 
-            if (ignorecontrol_reports)
+            if (uint32 ignorecontrol_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::IGNORE_CONTROL_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Ignore Control Reports", ignorecontrol_reports);
 
-            if (zaxis_reports)
+            if (uint32 zaxis_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::ZAXIS_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Ignore Z-Axis Reports", zaxis_reports);
 
-            if (antiswim_reports)
+            if (uint32 antiswim_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::ANTISWIM_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Anti-Swim Reports", antiswim_reports);
 
-            if (gravity_reports)
+            if (uint32 gravity_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::GRAVITY_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Gravity Reports", gravity_reports);
 
-            if (antiknockback_reports)
+            if (uint32 antiknockback_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::ANTIKNOCK_BACK_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Anti-Knock Back Reports", antiknockback_reports);
 
-            if (no_fall_damage_reports)
+            if (uint32 no_fall_damage_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::NO_FALL_DAMAGE_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "No Fall Damage Reports", no_fall_damage_reports);
 
-            if (op_ack_reports)
+            if (uint32 op_ack_reports = sAnticheatMgr->GetTypeReports(guid, ReportTypes::OP_ACK_HACK_REPORT))
                 handler->PSendSysMessage(lineTemplate_u, "Op Ack Reports", op_ack_reports);
 
             return true;

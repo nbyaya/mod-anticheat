@@ -98,13 +98,6 @@ void AnticheatMgr::StartHackDetection(Player* player, MovementInfo movementInfo,
         return;
     }
 
-    // Dear future me. Please forgive me.
-    // I can't even begin to express how sorry I am for this order
-    // If you bought this you have been scammed.
-    // Visit AC: https://discord.com/invite/kZnFt47U for help on the Open Source Anticheat
-    // The project compromised of various developers of the open source scene and we hang out there.
-    // We would never charge for modules or "lessons"
-
     TeleportHackDetection(player, movementInfo);
     SpeedHackDetection(player, movementInfo);
     FlyHackDetection(player, movementInfo);
