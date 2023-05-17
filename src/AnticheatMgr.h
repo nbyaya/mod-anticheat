@@ -36,7 +36,7 @@
 class Player;
 class AnticheatData;
 
-enum ReportTypes
+enum ReportTypes : uint8
 {
     SPEED_HACK_REPORT = 0,
     FLY_HACK_REPORT = 1,
@@ -129,7 +129,7 @@ class AnticheatMgr
         void BGreport(Player* player);
         void CheckStartPositions(Player* player);
         void BGStartExploit(Player* player, MovementInfo movementInfo);
-        void BuildReport(Player* player,uint16 reportType);
+        void BuildReport(Player* player, uint8 reportType);
         bool MustCheckTempReports(uint8 type);
         uint32 _counter = 0;
         uint32 _alertFrequency = 0;
