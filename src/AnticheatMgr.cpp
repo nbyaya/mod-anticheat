@@ -39,7 +39,7 @@ constexpr auto LANG_ANTICHEAT_COUNTERMEASURE = 30092;
 // Time between server sends acknowledgement, and client is actually acknowledged
 constexpr auto ALLOWED_ACK_LAG = 2000;
 
-enum Spells
+enum Spells : uint32
 {
     SHACKLES = 38505,
     LFG_SPELL_DUNGEON_DESERTER = 71041,
@@ -308,7 +308,6 @@ void AnticheatMgr::SpeedHackDetection(Player* player, MovementInfo movementInfo)
                 }
                 BuildReport(player, SPEED_HACK_REPORT);
             }
-            return;
         }
     }
 }
@@ -351,14 +350,11 @@ void AnticheatMgr::FlyHackDetection(Player* player, MovementInfo  movementInfo)
         data << str;
         sWorld->SendGlobalGMMessage(&data);
 
-        Player* cheatertarget = player->GetSession()->GetPlayer();
-
         WorldPacket cheater(12);
         cheater.SetOpcode(SMSG_MOVE_UNSET_CAN_FLY);
-
-        cheater << cheatertarget->GetPackGUID();
+        cheater << player->GetPackGUID();
         cheater << uint32(0);
-        cheatertarget->SendMessageToSet(&cheater, true);
+        player->SendMessageToSet(&cheater, true);
         if (sConfigMgr->GetOption<bool>("Anticheat.CM.WriteLog", true))
         {
             std::string goXYZ = ".go xyz " + std::to_string(player->GetPositionX()) + " " + std::to_string(player->GetPositionY()) + " " + std::to_string(player->GetPositionZ() + 1.0f) + " " + std::to_string(player->GetMap()->GetId()) + " " + std::to_string(player->GetOrientation());
@@ -414,7 +410,7 @@ void AnticheatMgr::JumpHackDetection(Player* player, MovementInfo movementInfo, 
             data << str;
             sWorld->SendGlobalGMMessage(&data);
 
-            player->GetSession()->GetPlayer()->GetMotionMaster()->MoveFall();
+            player->GetMotionMaster()->MoveFall();
 
             if (sConfigMgr->GetOption<bool>("Anticheat.CM.WriteLog", true))
             {
@@ -485,9 +481,7 @@ void AnticheatMgr::JumpHackDetection(Player* player, MovementInfo movementInfo, 
                 data << str;
                 sWorld->SendGlobalGMMessage(&data);
 
-                Player* cheatertarget = player->GetSession()->GetPlayer();
-
-                cheatertarget->GetMotionMaster()->MoveFall();
+                player->GetMotionMaster()->MoveFall();
 
                 if (sConfigMgr->GetOption<bool>("Anticheat.CM.WriteLog", true))
                 {
@@ -817,10 +811,10 @@ void AnticheatMgr::IgnoreControlHackDetection(Player* player, MovementInfo movem
                     WorldPacket data(SMSG_NOTIFICATION, str.size() + 1);
                     data << str;
                     sWorld->SendGlobalGMMessage(&data);
-                    uint32 latency = player->GetSession()->GetLatency();
                     // need better way to limit chat spam
                     if (m_Players[key].GetTotalReports() >= sConfigMgr->GetOption<uint32>("Anticheat.ReportinChat.Min", 70) && m_Players[key].GetTotalReports() <= sConfigMgr->GetOption<uint32>("Anticheat.ReportinChat.Max", 80))
                     {
+                        uint32 latency = player->GetSession()->GetLatency();
                         sWorld->SendGMText(LANG_ANTICHEAT_IGNORECONTROL, player->GetName().c_str(), latency);
                     }
                     _counter = 0;
@@ -1006,9 +1000,7 @@ void AnticheatMgr::ZAxisHackDetection(Player* player, MovementInfo movementInfo)
             data << str;
             sWorld->SendGlobalGMMessage(&data);
 
-            Player* cheatertarget = player->GetSession()->GetPlayer();
-
-            cheatertarget->GetMotionMaster()->MoveFall();
+            player->GetMotionMaster()->MoveFall();
 
             if (sConfigMgr->GetOption<bool>("Anticheat.CM.WriteLog", true))
             {
