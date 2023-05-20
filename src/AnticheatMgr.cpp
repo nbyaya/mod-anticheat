@@ -1453,12 +1453,12 @@ float AnticheatMgr::GetAverage(ObjectGuid guid)
     return m_Players[guid].GetAverage();
 }
 
-uint32 AnticheatMgr::GetTypeReports(ObjectGuid guid, uint8 type)
+uint32 AnticheatMgr::GetTypeReports(ObjectGuid guid, ReportTypes type)
 {
     return m_Players[guid].GetTypeReports(type);
 }
 
-bool AnticheatMgr::MustCheckTempReports(uint8 type)
+bool AnticheatMgr::MustCheckTempReports(ReportTypes type)
 {
     //Return false if type is any of them.
     return type != JUMP_HACK_REPORT
@@ -1471,7 +1471,7 @@ bool AnticheatMgr::MustCheckTempReports(uint8 type)
         && type != COUNTER_MEASURES_REPORT;
 }
 
-void AnticheatMgr::BuildReport(Player* player, uint8 reportType)
+void AnticheatMgr::BuildReport(Player* player, ReportTypes reportType)
 {
     OnReport(player, reportType);
     ObjectGuid key = player->GetGUID();
