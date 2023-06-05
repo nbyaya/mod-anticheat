@@ -41,12 +41,12 @@ constexpr auto ALLOWED_ACK_LAG = 2000;
 
 enum Spells : uint32
 {
-    BLINK = 1953u,
-    BLINK_COOLDOWN_REDUCTION = 23025u,      // Reduces Blink cooldown by 2 seconds.
-    GLYPH_OF_BLINK = 56365u,                // Increases Blink distance by 5 yards.
-    SHADOWSTEP = 36554u,
-    FILTHY_TRICKS_RANK_1 = 58414u,          // Reduces Shadowstep cooldown by 5 seconds.
-    FILTHY_TRICKS_RANK_2 = 58415u,          // Reduces Shadowstep cooldown by 10 seconds.
+    BLINK = 1953,
+    BLINK_COOLDOWN_REDUCTION = 23025,       // Reduces Blink cooldown by 2 seconds.
+    GLYPH_OF_BLINK = 56365,                 // Increases Blink distance by 5 yards.
+    SHADOWSTEP = 36554,
+    FILTHY_TRICKS_RANK_1 = 58414,           // Reduces Shadowstep cooldown by 5 seconds.
+    FILTHY_TRICKS_RANK_2 = 58415,           // Reduces Shadowstep cooldown by 10 seconds.
     SHACKLES = 38505,
     LFG_SPELL_DUNGEON_DESERTER = 71041,
     BG_SPELL_DESERTER = 26013,
@@ -144,13 +144,11 @@ uint32 AnticheatMgr::GetTeleportSkillCooldownDurationInMS(Player* player) const
                 return 20000u;
             else if (player->HasAura(FILTHY_TRICKS_RANK_1))
                 return 25000u;
-            else
-                return 30000u;
+            return 30000u;
         case CLASS_MAGE:
             if (player->HasAura(BLINK_COOLDOWN_REDUCTION)) // Bonus from Vanilla/Early TBC pvp gear.
                 return 13000u;
-            else
-                return 15000u;
+            return 15000u;
         default:
             return 0u;
     }
@@ -167,8 +165,7 @@ float AnticheatMgr::GetTeleportSkillDistanceInYards(Player* player) const
         case CLASS_MAGE: // The mage's teleport spell is Blink.
             if (player->HasAura(GLYPH_OF_BLINK))
                 return 25.1f; // Includes a 0.1 miscalculation margin.
-            else
-                return 20.1f; // Includes a 0.1 miscalculation margin.
+            return 20.1f; // Includes a 0.1 miscalculation margin.
         default:
             return 0.0f;
     }
@@ -179,17 +176,13 @@ float AnticheatMgr::GetPlayerCurrentSpeedRate(Player* player) const
 {
     // we need to know HOW is the player moving
     // TO-DO: Should we check the incoming movement flags?
-    UnitMoveType moveType;
     if (player->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
-        moveType = MOVE_SWIM;
+        return player->GetSpeed(MOVE_SWIM);
     else if (player->IsFlying())
-        moveType = MOVE_FLIGHT;
+        return player->GetSpeed(MOVE_FLIGHT);
     else if (player->HasUnitMovementFlag(MOVEMENTFLAG_WALKING))
-        moveType = MOVE_WALK;
-    else
-        moveType = MOVE_RUN;
-
-    return player->GetSpeed(moveType);
+        return player->GetSpeed(MOVE_WALK);
+    return player->GetSpeed(MOVE_RUN);
 }
 
 void AnticheatMgr::SpeedHackDetection(Player* player, MovementInfo movementInfo)
@@ -322,11 +315,9 @@ void AnticheatMgr::SpeedHackDetection(Player* player, MovementInfo movementInfo)
     }
 
     // this is the distance doable by the player in 1 sec, using the time done to move to this point.
-    float clientSpeedRate;
+    float clientSpeedRate = 0.0f;
     if (float floatTimeDiff = float(timeDiff))
         clientSpeedRate = distance2D * 1000.0f / floatTimeDiff;
-    else
-        clientSpeedRate = 0.0f;
 
     // we create a diff speed in uint32 for further precision checking to avoid legit fall and slide
     float diffspeed = clientSpeedRate - speedRate;
