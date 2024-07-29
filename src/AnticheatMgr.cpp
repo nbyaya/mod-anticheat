@@ -23,6 +23,8 @@
  */
 
 #include "AnticheatMgr.h"
+
+#include "BanMgr.h"
 #include "Log.h"
 #include "MapMgr.h"
 #include "Player.h"
